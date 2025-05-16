@@ -25,6 +25,12 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(text);
     } catch (err) {
+      console.error('Error parsing Zoho response:', err);
+      // If the response is not valid JSON, log the error and return a 500 status
+      // with a generic error message.
+      // This is important to avoid exposing sensitive information in the logs.
+      // You can also log the raw response text for debugging purposes.
+      console.error('Raw response:', text);
       console.error('Failed to parse Zoho response as JSON:', text);
       return res.status(500).json({ error: 'Server returned invalid JSON.' });
     }
