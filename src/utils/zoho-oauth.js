@@ -8,7 +8,7 @@ const ORG_ID = process.env.REACT_APP_ZOHO_ORG_ID;
 // Scopes required for Zoho Billing API access - adjust as needed
 const SCOPES = [
   'ZohoBilling.customers.READ',
-  'ZohoBilling.invoices.READ',
+//   'ZohoBilling.invoices.READ',
   // add other scopes your app needs
 ].join(' ');
 
