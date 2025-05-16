@@ -13,6 +13,16 @@ try {
 
   const text = await result.text();
   console.log('Zoho response:', text); // ✅ log this
+console.log('Zoho response text:', text); // 🔍 this will reveal what's going wrong
+
+        let data = {};
+        try {
+        data = JSON.parse(text);
+        } catch (err) {
+        console.error('Failed to parse Zoho response as JSON:', text);
+        return res.status(500).json({ error: 'Server returned invalid JSON.' });
+        }
+
 
   const data = JSON.parse(text);
 
