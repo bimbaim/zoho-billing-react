@@ -14,11 +14,11 @@ function App() {
   };
 
   // ✅ Exchange authorization code for tokens via your backend API
-  const exchangeCodeForTokens = async (code) => {
+const exchangeCodeForTokens = async (code) => {
   setAuthenticating(true);
   setError(null);
   try {
-    const response = await fetch('/api/oauth/token', {
+    const response = await fetch('/api/token', {  // <-- match your Vercel API route here
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,27 +26,21 @@ function App() {
       body: JSON.stringify({ code }),
     });
 
-    const text = await response.text();
-    let data = {};
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error('Server returned invalid JSON.');
-    }
+    const data = await response.json();
+
+    console.log('Token response data:', data);  // Log to confirm
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to exchange authorization code for tokens.');
     }
 
-    const { access_token } = data;
-
-    if (!access_token) {
+    if (!data.access_token) {
       throw new Error('No access token received from server.');
     }
 
-    setAccessToken(access_token);
+    setAccessToken(data.access_token);
     setAuthenticated(true);
-    fetchCustomerData(access_token);
+    fetchCustomerData(data.access_token);
   } catch (err) {
     setError('Failed to exchange authorization code for tokens. ' + err.message);
     setAuthenticated(false);
@@ -54,6 +48,7 @@ function App() {
     setAuthenticating(false);
   }
 };
+
 
 
   // ✅ Fetch customer data from your backend
