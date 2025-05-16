@@ -101,6 +101,7 @@ function App() {
       setAuthenticated(false);
     }
   }, []);
+  
 
   // Generate Zoho OAuth authorization URL for user to login and authorize
   const getAuthorizationUrl = () => {
