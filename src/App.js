@@ -85,7 +85,7 @@ function App() {
 
   useEffect(() => {
     const code = getQueryParam('code');
-    const emailParam = getQueryParam('email');
+    const emailParam = getQueryParam('state');
 
     if (!emailParam) {
       setError('No email provided in query parameters.');
