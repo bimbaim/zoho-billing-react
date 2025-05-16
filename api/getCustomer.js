@@ -17,9 +17,9 @@ export default async function handler(req, res) {
   const accessToken = authHeader.split(' ')[1];
 
   try {
-    const zohoResponse = await fetch(`https://subscriptions.zoho.com/api/v1/customers?email=${encodeURIComponent(email)}`, {
+    const zohoResponse = await fetch(`https://www.zohoapis.com/billing/v1/customers?email=${encodeURIComponent(email)}`, {
       headers: {
-        Authorization: `Zoho-oauthtoken ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });
