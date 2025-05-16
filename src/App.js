@@ -96,13 +96,15 @@ function App() {
     const state = encodeURIComponent(email || '');
     return `https://accounts.zoho.com/oauth/v2/auth?scope=${scopes}&client_id=${clientId}&response_type=code&access_type=offline&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&prompt=consent`;
   };
-  console.log('Authorization URL:', getAuthorizationUrl());
-  console.log('Access Token:', accessToken);
+  
 
 
   return (
     <div className="container mt-5">
       <h1 className="mb-4">Zoho Billing Customer Data</h1>
+      <p>access_token: {accessToken}</p>
+      <p>email: {email}</p>
+      <p>authenticated: {authenticated ? 'true' : 'false'}</p>
 
       {!authenticated && !authenticating && (
         <>
