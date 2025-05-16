@@ -69,7 +69,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`../api/getCustomer?email=${encodeURIComponent(emailParam)}`, {
+      const response = await fetch(`/api/getCustomer?email=${encodeURIComponent(emailParam)}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
