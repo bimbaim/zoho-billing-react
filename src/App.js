@@ -18,7 +18,7 @@ function App() {
   setAuthenticating(true);
   setError(null);
   try {
-    const response = await fetch('../api/oauth/token', {
+    const response = await fetch('/api/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
