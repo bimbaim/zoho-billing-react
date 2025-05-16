@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     // Function to call Zoho Billing API with current access token
     async function fetchCustomerData(token) {
       const response = await fetch(
-        `https://www.zohoapis.com/billing/v3/customers?email=${encodeURIComponent(email)}`,
+        `https://www.zohoapis.com/billing/v1/customers?email=${encodeURIComponent(email)}`,
         {
           headers: getAuthHeaders(token),
         }
