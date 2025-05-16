@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        '1000.bead5a4438520ba6ff862eabd6152c93.f5da830807aa6278afc15466dd03a773',
+        code,
         client_id: process.env.ZOHO_CLIENT_ID,
         client_secret: process.env.ZOHO_CLIENT_SECRET,
         redirect_uri: process.env.ZOHO_REDIRECT_URI,
