@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import { getAuthHeaders, refreshAccessToken } from '../utils/zoho-oauth.js';
 
 export default async function handler(req, res) {
   const { email } = req.query;
@@ -7,27 +7,56 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Email query parameter is required' });
   }
 
-  const accessToken = process.env.ZOHO_ACCESS_TOKEN;
-
-  if (!accessToken) {
-    return res.status(500).json({ error: 'Zoho access token is not configured' });
-  }
-
   try {
-    const response = await fetch(`https://www.zohoapis.com/billing/v3/customers?email=${encodeURIComponent(email)}`, {
-      headers: {
-        Authorization: `Zoho-oauthtoken ${accessToken}`,
-      },
-    });
+    let accessToken = process.env.ZOHO_ACCESS_TOKEN;
+    const refreshToken = process.env.ZOHO_REFRESH_TOKEN;
+
+    if (!accessToken || !refreshToken) {
+      return res.status(500).json({ error: 'Access token or refresh token is not configured in environment variables.' });
+    }
+
+    // Function to call Zoho Billing API with current access token
+    async function fetchCustomerData(token) {
+      const response = await fetch(
+        `https://www.zohoapis.com/billing/v3/customers?email=${encodeURIComponent(email)}`,
+        {
+          headers: getAuthHeaders(token),
+        }
+      );
+      return response;
+    }
+
+    let response = await fetchCustomerData(accessToken);
+
+    // If unauthorized, try refreshing the token once
+    if (response.status === 401) {
+      try {
+        const tokenData = await refreshAccessToken(refreshToken);
+        accessToken = tokenData.access_token;
+
+        if (!accessToken) {
+          return res.status(500).json({ error: 'Failed to refresh access token.' });
+        }
+
+        // TODO: Persist the new access token securely (e.g., update environment variable or database)
+
+        response = await fetchCustomerData(accessToken);
+      } catch (refreshError) {
+        return res.status(500).json({ error: 'Error refreshing access token.', details: refreshError.message });
+      }
+    }
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(response.status).json({ error: errorData.message || 'Failed to fetch customer data' });
+      const errorData = await response.json().catch(() => ({}));
+      return res.status(response.status).json({
+        error: errorData.message || 'Failed to fetch customer data from Zoho Billing API',
+      });
     }
 
     const data = await response.json();
-    res.status(200).json(data);
+
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error', details: error.message });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
