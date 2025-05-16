@@ -130,7 +130,7 @@ function App() {
           {error && <div className="alert alert-danger mt-3">{error}</div>}
         </>
       )}
-
+ 
       {authenticating && (
         <div className="d-flex align-items-center">
           <strong>Exchanging authorization code for tokens...</strong>
