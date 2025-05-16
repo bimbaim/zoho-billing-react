@@ -31,12 +31,12 @@ const exchangeCodeForTokens = async (code) => {
     params.append('redirect_uri', redirectUri);
     params.append('code', code);
 
-    const response = await fetch('https://accounts.zoho.com/oauth/v2/token', {
+    const response = await fetch('/api/oauth/token', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: params.toString(),
+      body: JSON.stringify({ code }),
     });
 
     if (!response.ok) {
