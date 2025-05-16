@@ -15,41 +15,46 @@ function App() {
 
   // ✅ Exchange authorization code for tokens via your backend API
   const exchangeCodeForTokens = async (code) => {
-    setAuthenticating(true);
-    setError(null);
+  setAuthenticating(true);
+  setError(null);
+  try {
+    const response = await fetch('/api/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    });
+
+    const text = await response.text();
+    let data = {};
     try {
-      const response = await fetch('/api/oauth/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to exchange authorization code for tokens.');
-      }
-
-      const { access_token } = data;
-
-      if (!access_token) {
-        throw new Error('No access token received from server.');
-      }
-
-      setAccessToken(access_token);
-      setAuthenticated(true);
-
-      // ✅ After authentication, fetch customer data
-      fetchCustomerData(access_token);
-    } catch (err) {
-      setError('Failed to exchange authorization code for tokens. ' + err.message);
-      setAuthenticated(false);
-    } finally {
-      setAuthenticating(false);
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('Server returned invalid JSON.');
     }
-  };
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to exchange authorization code for tokens.');
+    }
+
+    const { access_token } = data;
+
+    if (!access_token) {
+      throw new Error('No access token received from server.');
+    }
+
+    setAccessToken(access_token);
+    setAuthenticated(true);
+    fetchCustomerData(access_token);
+  } catch (err) {
+    setError('Failed to exchange authorization code for tokens. ' + err.message);
+    setAuthenticated(false);
+  } finally {
+    setAuthenticating(false);
+  }
+};
+
 
   // ✅ Fetch customer data from your backend
   const fetchCustomerData = async (token) => {
