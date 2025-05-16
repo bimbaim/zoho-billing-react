@@ -11,9 +11,9 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: process.env.ZOHO_CLIENT_ID,
-        client_secret: process.env.ZOHO_CLIENT_SECRET,
-        redirect_uri: process.env.ZOHO_REDIRECT_URI,
+        client_id: process.env.REACT_APP_ZOHO_CLIENT_ID,
+        client_secret: process.env.REACT_APP_ZOHO_CLIENT_SECRET,
+        redirect_uri: process.env.REACT_APP_ZOHO_REDIRECT_URI,
         grant_type: 'authorization_code',
       }),
     });
