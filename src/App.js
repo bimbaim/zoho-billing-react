@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
 function App() {
   const [authenticating, setAuthenticating] = useState(false);
@@ -20,10 +19,21 @@ function App() {
     setAuthenticating(true);
     setError(null);
     try {
-      // Call your backend API to exchange code for tokens
-      // Assuming you have an endpoint /api/oauth/token that handles this
-      const response = await axios.post('/api/oauth/token', { code });
-      const { access_token, refresh_token } = response.data;
+      const response = await fetch('/api/oauth/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to exchange authorization code for tokens.');
+      }
+
+      const data = await response.json();
+      const { access_token, refresh_token } = data;
 
       if (!access_token) {
         throw new Error('No access token received from server.');
@@ -32,14 +42,10 @@ function App() {
       setAccessToken(access_token);
       setAuthenticated(true);
 
-      // Optionally store tokens in localStorage/sessionStorage if needed
-      // localStorage.setItem('access_token', access_token);
-      // localStorage.setItem('refresh_token', refresh_token);
-
       // After authentication, fetch customer data
       fetchCustomerData(access_token);
     } catch (err) {
-      setError('Failed to exchange authorization code for tokens. ' + (err.response?.data?.error || err.message));
+      setError('Failed to exchange authorization code for tokens. ' + err.message);
       setAuthenticated(false);
     } finally {
       setAuthenticating(false);
@@ -50,22 +56,30 @@ function App() {
   const fetchCustomerData = async (token) => {
     setError(null);
     setCustomerData(null);
-    setEmail(getQueryParam('email') || '');
+    const emailParam = getQueryParam('email') || '';
+    setEmail(emailParam);
 
-    if (!email) {
+    if (!emailParam) {
       setError('No email provided in query parameters.');
       return;
     }
 
     try {
-      const response = await axios.get(`/api/getCustomer?email=${encodeURIComponent(email)}`, {
+      const response = await fetch(`/api/getCustomer?email=${encodeURIComponent(emailParam)}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setCustomerData(response.data);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch customer data.');
+      }
+
+      const data = await response.json();
+      setCustomerData(data);
     } catch (err) {
-      setError('Failed to fetch customer data. ' + (err.response?.data?.error || err.message));
+      setError('Failed to fetch customer data. ' + err.message);
     }
   };
 
@@ -96,19 +110,19 @@ function App() {
     const state = encodeURIComponent(email || '');
     return `https://accounts.zoho.com/oauth/v2/auth?scope=${scopes}&client_id=${clientId}&response_type=code&access_type=offline&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&prompt=consent`;
   };
-  
-
 
   return (
     <div className="container mt-5">
-      <h1 className="mb-4">Zoho Billing Customer Data</h1> 
+      <h1 className="mb-4">Zoho Billing Customer Data</h1>
       <p>access_token: {accessToken}</p>
       <p>email: {email}</p>
       <p>authenticated: {authenticated ? 'true' : 'false'}</p>
 
       {!authenticated && !authenticating && (
         <>
-          <p>Please authorize the app to access Zoho Billing data for email: <strong>{email || 'N/A'}</strong></p>
+          <p>
+            Please authorize the app to access Zoho Billing data for email: <strong>{email || 'N/A'}</strong>
+          </p>
           <a href={getAuthorizationUrl()} className="btn btn-primary">
             Authorize with Zoho
           </a>
@@ -125,7 +139,9 @@ function App() {
 
       {authenticated && (
         <>
-          <p>Authenticated successfully. Showing data for: <strong>{email}</strong></p>
+          <p>
+            Authenticated successfully. Showing data for: <strong>{email}</strong>
+          </p>
 
           {!customerData && !error && (
             <div className="d-flex align-items-center">
@@ -141,10 +157,18 @@ function App() {
               <div key={customer.customer_id} className="card mb-3">
                 <div className="card-body">
                   <h5 className="card-title">{customer.customer_name}</h5>
-                  <p className="card-text"><strong>Email:</strong> {customer.email}</p>
-                  <p className="card-text"><strong>Company:</strong> {customer.company_name || 'N/A'}</p>
-                  <p className="card-text"><strong>Phone:</strong> {customer.phone || 'N/A'}</p>
-                  <p className="card-text"><strong>Billing Address:</strong> {customer.billing_address?.address || 'N/A'}</p>
+                  <p className="card-text">
+                    <strong>Email:</strong> {customer.email}
+                  </p>
+                  <p className="card-text">
+                    <strong>Company:</strong> {customer.company_name || 'N/A'}
+                  </p>
+                  <p className="card-text">
+                    <strong>Phone:</strong> {customer.phone || 'N/A'}
+                  </p>
+                  <p className="card-text">
+                    <strong>Billing Address:</strong> {customer.billing_address?.address || 'N/A'}
+                  </p>
                 </div>
               </div>
             ))
