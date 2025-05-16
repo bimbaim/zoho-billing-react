@@ -8,63 +8,50 @@ function App() {
   const [email, setEmail] = useState('');
   const [accessToken, setAccessToken] = useState(null);
 
-  // Helper to get query params from URL
   const getQueryParam = (param) => {
     const params = new URLSearchParams(window.location.search);
     return params.get(param);
   };
 
-  // Exchange authorization code for tokens via backend API
-const exchangeCodeForTokens = async (code) => {
-  setAuthenticating(true);
-  setError(null);
+  // ✅ Exchange authorization code for tokens via your backend API
+  const exchangeCodeForTokens = async (code) => {
+    setAuthenticating(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/oauth/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code }),
+      });
 
-  const clientId = process.env.REACT_APP_ZOHO_CLIENT_ID;
-  const clientSecret = process.env.REACT_APP_ZOHO_CLIENT_SECRET;
-  const redirectUri = process.env.REACT_APP_ZOHO_REDIRECT_URI;
+      const data = await response.json();
 
-  try {
-    const params = new URLSearchParams();
-    params.append('client_id', clientId);
-    params.append('client_secret', clientSecret);
-    params.append('grant_type', 'authorization_code');
-    params.append('redirect_uri', redirectUri);
-    params.append('code', code);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to exchange authorization code for tokens.');
+      }
 
-    const response = await fetch('/api/oauth/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ code }),
-    });
+      const { access_token } = data;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to exchange authorization code for tokens.');
+      if (!access_token) {
+        throw new Error('No access token received from server.');
+      }
+
+      setAccessToken(access_token);
+      setAuthenticated(true);
+
+      // ✅ After authentication, fetch customer data
+      fetchCustomerData(access_token);
+    } catch (err) {
+      setError('Failed to exchange authorization code for tokens. ' + err.message);
+      setAuthenticated(false);
+    } finally {
+      setAuthenticating(false);
     }
+  };
 
-    const data = await response.json();
-    const { access_token, refresh_token } = data;
-
-    if (!access_token) {
-      throw new Error('No access token received from Zoho.');
-    }
-
-    setAccessToken(access_token);
-    setAuthenticated(true);
-
-    // Fetch customer data
-    fetchCustomerData(access_token);
-  } catch (err) {
-    setError('Failed to exchange authorization code for tokens. ' + err.message);
-    setAuthenticated(false);
-  } finally {
-    setAuthenticating(false);
-  }
-};
-
-  // Fetch customer data from backend API
+  // ✅ Fetch customer data from your backend
   const fetchCustomerData = async (token) => {
     setError(null);
     setCustomerData(null);
@@ -83,12 +70,12 @@ const exchangeCodeForTokens = async (code) => {
         },
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch customer data.');
+        throw new Error(data.error || 'Failed to fetch customer data.');
       }
 
-      const data = await response.json();
       setCustomerData(data);
     } catch (err) {
       setError('Failed to fetch customer data. ' + err.message);
@@ -97,7 +84,7 @@ const exchangeCodeForTokens = async (code) => {
 
   useEffect(() => {
     const code = getQueryParam('code');
-    const emailParam = getQueryParam('state');
+    const emailParam = getQueryParam('state'); // you're passing email as state in the Zoho OAuth URL
 
     if (!emailParam) {
       setError('No email provided in query parameters.');
@@ -106,16 +93,12 @@ const exchangeCodeForTokens = async (code) => {
     setEmail(emailParam);
 
     if (code) {
-      // If authorization code is present, exchange it for tokens
       exchangeCodeForTokens(code);
     } else {
-      // No code, user not authenticated yet
       setAuthenticated(false);
     }
   }, []);
-  
 
-  // Generate Zoho OAuth authorization URL for user to login and authorize
   const getAuthorizationUrl = () => {
     const clientId = process.env.REACT_APP_ZOHO_CLIENT_ID;
     const redirectUri = process.env.REACT_APP_ZOHO_REDIRECT_URI;
