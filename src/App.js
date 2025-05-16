@@ -101,7 +101,7 @@ function App() {
       setAuthenticated(false);
     }
   }, []);
-  
+
 
   // Generate Zoho OAuth authorization URL for user to login and authorize
   const getAuthorizationUrl = () => {
@@ -109,7 +109,7 @@ function App() {
     const redirectUri = process.env.REACT_APP_ZOHO_REDIRECT_URI;
     const scopes = encodeURIComponent('ZohoSubscriptions.customers.READ');
     const state = encodeURIComponent(email || '');
-    return `https://accounts.zoho.com/oauth/v2/auth?scope=${scopes}&client_id=${clientId}&response_type=code&access_type=offline&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&prompt=consent`;
+    return `https://accounts.zoho.com/oauth/v2/auth?scope=${scopes}&client_id=${clientId}&response_type=code&access_type=offline&redirect_uri=${encodeURIComponent(redirectUri)}&email=${state}&prompt=consent`;
   };
 
   return (
