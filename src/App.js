@@ -60,7 +60,7 @@ function App() {
   const fetchCustomerData = async (token) => {
     setError(null);
     setCustomerData(null);
-    const emailParam = getQueryParam('email') || '';
+    const emailParam = getQueryParam('state') || '';
     setEmail(emailParam);
 
     if (!emailParam) {
