@@ -15,6 +15,10 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Access token or refresh token is not configured in environment variables.' });
     }
 
+    console.log('Access Token:', accessToken);
+    console.log('Refresh Token:', refreshToken);
+    console.log('Email:', email);
+
     // Function to call Zoho Billing API with current access token
     async function fetchCustomerData(token) {
       const response = await fetch(
