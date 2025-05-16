@@ -106,4 +106,11 @@ export function getAuthHeaders(accessToken) {
     'X-com-zoho-billing-organizationid': ORG_ID,
     'Content-Type': 'application/json',
   };
+  console.log('Headers:', {
+    Authorization: `Zoho-oauthtoken ${accessToken}`,
+    'X-com-zoho-billing-organizationid': ORG_ID,
+    'Content-Type': 'application/json',
+  });
+  console.log('Access Token:', accessToken);
+  console.log('Org ID:', ORG_ID);
 }
